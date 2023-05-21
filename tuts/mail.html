@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-02-26 Sat 22:49 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Email-setup</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Ashwin Kafle" />
+<link rel="stylesheet" type="text/css" href="/css.css" />
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../"> UP </a>
+ |
+ <a accesskey="H" href="/"> HOME </a>
+</div><div id="content">
+<h1 class="title">Email-setup</h1>
+<div id="outline-container-org1a52584" class="outline-2">
+<h2 id="org1a52584"><span class="section-number-2">1</span> Go back:</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Go to <a href="../index.html">index</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgc9c6323" class="outline-2">
+<h2 id="orgc9c6323"><span class="section-number-2">2</span> Setting up E-mail</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This tutorial is to show how to setup email receiving, indexing, sending and
+viewing it.
+</p>
+</div>
+
+<div id="outline-container-orgcb31755" class="outline-3">
+<h3 id="orgcb31755"><span class="section-number-3">2.1</span> Understanding email in this context</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+For our purposes, an email is a file that is stored somewhere. A single email
+is a single file stored in a directory somewhere.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org74799cc" class="outline-3">
+<h3 id="org74799cc"><span class="section-number-3">2.2</span> Requirements</h3>
+<div class="outline-text-3" id="text-2-2">
+<ul class="org-ul">
+<li>isync
+This program downloads mail from server. See man mbsync</li>
+<li>notmuch
+This program tags received mail and indexes them. For eg, an email about
+rock music can be tagged with "rock", "music", etc so that later, we can
+search them.</li>
+<li>afew
+This program is to handle automatic-tagging to notmuch. while it is
+possible to do it directly through notmuch, afew makes it easier</li>
+<li>emacs or neomutt or mutt
+This is the frontend where you read and write emails.</li>
+</ul>
+</div>
+
+<div id="outline-container-org79ca141" class="outline-4">
+<h4 id="org79ca141"><span class="section-number-4">2.2.1</span> isync</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+mbsync is the program developed by isync project.
+mbsync looks for a file ~/.mbsyncrc for it's configuration. Since it
+downloads mail, it needs your password too. It's better to use app-passwords
+if your provider supports them and use `pass` to get password.
+</p>
+
+<p>
+See it's arch-wiki page for more details.
+The structure and meaning of relevant block is included in the example
+</p>
+<div class="org-src-container">
+<pre class="src src-conf">###########################
+# Conf for mbsync #########
+# put this in ~/.mbsyncrc #
+###########################
+
+#account name
+IMAPAccount NAME
+Host imap.domain.tld
+User name@domain.tld
+Pass "hunter2"
+#use pass with:
+#PassCmd sh script_name
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+#Store is a collection of mailboxes. Say you have mailboxes like
+#inbox, spam, trash, draft, etc, those are stored in a single store
+#Seperate accounts have seperate stores.
+IMAPStore NAME-remote
+Account NAME
+
+#here, local store is defined. you're going to download emails so
+#you'll have to tell it so save somewhere.
+MailDirStore NAME-local
+Subfolders Verbatim
+     # / at end is important
+Path ~/mail/
+Inbox ~/mail/Inbox
+
+channel NAME
+Far :NAME-remote:
+Near :NAME-local:
+#sync's all folders it can find. If you have a folder you don't want
+#to sync, use ! in the pattern. Like: "!Spam"
+Patterns *
+#if folder dosen't exists, make it. be it remote or local.
+Create Both
+#Saves synchronization state files.
+SyncState *
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org98ff420" class="outline-4">
+<h4 id="org98ff420"><span class="section-number-4">2.2.2</span> notmuch</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+Notmuch indexes mails so you can search within the mail. It also stores tags
+for organization. See `man notmuch` which has very good documentation.
+</p>
+
+<p>
+Run `notmuch setup` so that it does all the initial heavylifting.
+Then, edit ~/.notmuch-config with the option below. The config file itself
+is very well written and you <b>should</b> read it.
+</p>
+
+<p>
+After receiving mail, you should run `notmuch new`.
+</p>
+
+<p>
+This config makes it so new mails are tagged with tag "new" only. Everything
+else should be handled by afew.
+</p>
+<div class="org-src-container">
+<pre class="src src-conf">#Find the correct line and make it as below
+[new]
+  tags=new;
+  ignore=
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3a4a78d" class="outline-4">
+<h4 id="org3a4a78d"><span class="section-number-4">2.2.3</span> afew</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+Afew makes it easy to automatically tag new messages into whatever
+tag you like. While notmuch can do it too, it is more complex and
+afew is a lot more easier to write filters.
+</p>
+
+<p>
+You can even download filters from internet as python files that
+implement much complex filters. Just download filter and add it to
+~/.config/afew/.
+</p>
+
+<p>
+The man page of afew is very well written. Read it.
+</p>
+
+<p>
+You can alias this command to run mbsync, notmuch and afew at
+once.
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">alias mailsync="mbsync -a &amp;&amp; notmuch new &amp;&amp; afew --tag --new"
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc66d9d7" class="outline-4">
+<h4 id="orgc66d9d7"><span class="section-number-4">2.2.4</span> emacs</h4>
+<div class="outline-text-4" id="text-2-2-4">
+<p>
+Finally, to read messages, install `notmuch-emacs` package from
+your distro's repo. Then type `M-x notmuch` and view on a tag like
+`new` or `all mail`.
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2021-06-09 Wed 00:00</p>
+<p class="author">Author: Ashwin Kafle</p>
+<p class="date">Created: 2022-02-26 Sat 22:49</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

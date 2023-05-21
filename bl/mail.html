@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mail Setup</title>
+<meta name="generator" content="Org mode" />
+<link rel="stylesheet" type="text/css" href="/css.css" />
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../"> UP </a>
+ |
+ <a accesskey="H" href="/"> HOME </a>
+</div><div id="content">
+<h1 class="title">Mail Setup</h1>
+<p>
+having mail in locally is great. the most common way to download mail locally from a server is to use a program such as mbsync(from isync program) or fetchmail.
+</p>
+
+<div id="outline-container-org71ba58d" class="outline-2">
+<h2 id="org71ba58d">Mbsync</h2>
+<div class="outline-text-2" id="text-org71ba58d">
+<p>
+Mbsync stores its config in .mbsyncrc.
+Some basic terms it uses in it's config are:
+</p>
+<ul class="org-ul">
+<li>Store: A Store is wherever your emails are located.
+it could be local directory, a remote server, etc</li>
+<li><p>
+Channel: A channel is a connection between two different stores.
+This is highly useful because you can sync two different local
+mail directories, different servers, etc.
+</p>
+
+<p>
+A small config for two account is:
+</p></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-conf"># Setting default for `channel` option below
+# Globabl options must be at the top.
+# * means to have state saved in the same directory as messages itself.
+SyncState *
+
+
+IMAPAccount foo
+Host mail.example.tld
+User foo@example.tld
+# you can also use Pass "passwordhere"
+PassCmd +"pass show foo@example.tld"
+# this is needed because this program uses
+# STARTTLS which initializes insecurely.
+SSLType IMAPS
+
+MailDirStore foo-local
+# how to handle subdirectories. if unset, it errors out.
+Subfolders Verbatim
+Path ~/.mail/
+
+IMAPStore foo-remote
+Account foo
+
+Channel sync-foo
+Far :foo-remote:
+Near :foo-local:
+Patterns *
+# the default is to sync all; this only pulls messages in but
+# dosen't send the server anything.
+Sync Pull
+# what to do if mailboxes are not created yet.
+# the default is to not do anyting. change it to Both to create in both places.
+Create Near
+
+# Group sync-foo-bar
+# # if sync-bar channel is defined, `mbsync sync-foo-bar` will
+# # sync both foo and bar.
+# Channel sync-foo sync-bar
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc191528" class="outline-2">
+<h2 id="orgc191528">notmuch &amp; afew</h2>
+<div class="outline-text-2" id="text-orgc191528">
+<p>
+After getting mail, you can, of-course, just tell your MUA to read it from there and be done with it.
+but thats too simple :) so well introduce two more steps just 'cause.
+</p>
+</div>
+
+<div id="outline-container-orgc12f7cb" class="outline-3">
+<h3 id="orgc12f7cb">notmuch</h3>
+<div class="outline-text-3" id="text-orgc12f7cb">
+<p>
+the main point of notmuch is that it acts like a search engine for your mails.
+it also has tagging system and everything is kept in its own subdirectory so the actual mails are untouched.
+While one of its main point is tagging, well still let afew handle it as afew rules are simpler to write.
+</p>
+
+<p>
+to get started, just run `notmuch setup`. this will interactively ask you questions and make a config based on that.
+you can always type that again to change the config.
+Be sure that new mails are tagged with 'new' tag.
+</p>
+
+<p>
+Searching with notmuch is simple too. just type <code>notmuch search &lt;query&gt;</code>
+. see <code>man notmuch-search</code> and especially <code>man notmuch-search-terms</code>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org41812b9" class="outline-3">
+<h3 id="org41812b9">afew</h3>
+<div class="outline-text-3" id="text-org41812b9">
+<p>
+Here is where the magic happens.
+this program will take yoir mails and tag them properly.
+it will(read: can) also move mails between folders based on what tag they have.
+the man page is well written but a few things first:
+</p>
+
+<ul class="org-ul">
+<li>it always works on "filters".
+filters do everything, from setting tags like spam, unread, etc to movibg mails between folders.</li>
+<li><p>
+there are a-few (heh) pre defined filters.
+Moat of the time, you only want to extend them.
+Creating filters from scrarch is possible,
+you can even download them but not needed in general.
+</p>
+
+<p>
+An example of using filter which also moves mail(if using &#x2013;move-mail) is:
+</p>
+<div class="org-src-container">
+<pre class="src src-conf">[Filter.1]
+message = tag messages from common spammer
+query = from:spamer@clickbaitdomail.tld
+tags = +deleted;+spam;-new
+
+[Filter.2]
+message = add bank tag to bank emails.
+query = 'from:.*@mybank.com OR from:.*@secretbank.com'
+tags = +bank;-new
+
+# needed if you have more than one email address and
+# if you use maildir format(i.e. mbsync's default)
+[FolderNameFilter]
+# tags with spam are mapped to folder `Junk'
+folder_transforms = Junk:spam Sent:sent
+folder_lowercases = true
+maildir_separator = '/'
+
+[MailMover]
+folders = account1@domain.tld/INBOX account2@domain2.tld/INBOX
+max_age = 1000
+# since we're using mbsync which requires renaming.
+rename = True
+account1@domain.tld/INBOX = 'tag:sent':account1@domain.tld/Sent 'tag:spam':account1@domain.tld/Spam
+account2@domain2.tld/INBOX = 'tag:bank':account2@domain2.tld/bank
+</pre>
+</div></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="email">Email: <a href="mailto:ashwin@ashwink.com.np">ashwin@ashwink.com.np</a></p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

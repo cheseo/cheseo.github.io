@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<link rel="stylesheet" type="text/css" href="/css.css" />
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../"> UP </a>
+ |
+ <a accesskey="H" href="/"> HOME </a>
+</div><div id="content">
+<p>
+Gnus is great. Here's how to get started using email with it.
+To unlock the real power of gnus, you'll have to use newsgroups.
+Then only will the terminology will make sense and you can start reading it's manual.
+</p>
+
+<p>
+Note that the gnus manual, however dense might it seem is very descriptive.
+So, you should use newsgroups for a little while before using gnus to read mail.
+For that, skip directly to Select methods section below.
+</p>
+
+<div id="outline-container-org8ac4f62" class="outline-2">
+<h2 id="org8ac4f62">Mail sources</h2>
+<div class="outline-text-2" id="text-org8ac4f62">
+<p>
+The variable mail-sources has the sources for fetching mail from.
+Gnus will fetch it from different servers and store them in the hard disk.
+You can set-it as:
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">;; (info "(gnus) Mail Source Specifiers")
+(setq mail-sources '((imap :server "imap.domain.tld"
+			   :user "user@host.tld"
+			   :password "very-secret")
+		    (pop :server "pop3.mailserver.com"
+			 :user "myname")))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org35c95bf" class="outline-2">
+<h2 id="org35c95bf">Select methods</h2>
+<div class="outline-text-2" id="text-org35c95bf">
+<p>
+Select methods are responsible for getting and handling mails.
+There are various ways to go about it.
+</p>
+
+<p>
+You could get you mail from a pop server and
+may want it to store it in mbox or maildir or mail spools formats.
+There are two types of select methods.
+<code>gnus-select-method</code> and <code>gnus-secondary-select-methods</code>.
+Both of them act the same way except that as the name implies,
+<code>gnus-select-method</code> can only work with one backend.
+</p>
+
+<p>
+While there is a info node talking about select methods,
+i will not link to it since the only select methods people will use
+is either nntp or some sort of mail-related select method.
+The comparison of mail-related select methods can be read with:
+(info "(gnus) Comparing Mail Back Ends")
+As is said on that node, if you're on a personal computer, use nnml.
+However, nnml will likely not work with other MUAs.
+But that will never be needed ;-)
+(if you do want that, or are not in a personal computer, use nnfolder)
+</p>
+
+<p>
+To get news from a newsgroup (news.gmane.org),
+get mail as defined in <code>mail-sources</code>
+and store them in nnml files in ~/Mail/,
+you'd use the following:
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(setq gnus-select-method '(nntp "news.gmane.io")
+      gnus-secondary-select-methods '((nnml "")))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgabfa6ab" class="outline-2">
+<h2 id="orgabfa6ab">Splitting Mails</h2>
+<div class="outline-text-2" id="text-orgabfa6ab">
+<p>
+Not all mails are the same. Splitting takes all the incoming mail
+and divides them into various groups.
+Using gnus-group-split, we'll make some groups
+and then in the group parameters (G c), tell it some basic information.
+Gnus will then use this information to make a nnmail-split-fancy s-exp
+and split accordingly.
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(setq nnmail-split-methods 'gnus-group-split
+      ;;if incase you're using nnmaildir
+      nnmail-resplit-incoming t)
+</pre>
+</div>
+<p>
+Then, edit the group parameters after making the group with G c or G p
+and have it like:
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">((to-list . "foo@nowhere.gov")
+ (extra-aliases "foo@localhost" "foo-redist@home")
+ (split-exclude "bugs-foo" "rambling-foo")
+ (admin-address . "foo-request@nowhere.gov"))
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="email">Email: <a href="mailto:ashwin@ashwink.com.np">ashwin@ashwink.com.np</a></p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C Project Overview</title>
+<meta name="generator" content="Org mode" />
+<link rel="stylesheet" type="text/css" href="/css.css" />
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../"> UP </a>
+ |
+ <a accesskey="H" href="/"> HOME </a>
+</div><div id="content">
+<h1 class="title">C Project Overview</h1>
+<p>
+This is a page for the project given to ascol students of C subject in 2021.
+</p>
+
+<div id="outline-container-org3fcd545" class="outline-2">
+<h2 id="org3fcd545">Project Details:</h2>
+<div class="outline-text-2" id="text-org3fcd545">
+<p>
+The project is about creating a simple <a href="https://en.wikipedia.org/wiki/Data_Encryption_Standard">Data Encryption Standard(DES)</a>.
+To be a little familiar with DES, you may want to learn about SDES from:
+</p>
+<ul class="org-ul">
+<li>(pdf) <a href="http://mercury.webster.edu/aleshunas/COSC%205130/G-SDES.pdf">http://mercury.webster.edu/aleshunas/COSC%205130/G-SDES.pdf</a></li>
+<li>(pdf) <a href="http://ict.siit.tu.ac.th/~steven/css322y11s2/unprotected/CSS322Y11S2H01-DES-Examples.pdf">http://ict.siit.tu.ac.th/~steven/css322y11s2/unprotected/CSS322Y11S2H01-DES-Examples.pdf</a></li>
+<li>(implementation) <a href="https://toribeiro.com/simplified-DES-implementation-in-C/">https://toribeiro.com/simplified-DES-implementation-in-C/</a></li>
+</ul>
+
+<p>
+The Breaking down of project has not yet been done.
+This is to be done after feedback from my fellow peers.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcfe9644" class="outline-2">
+<h2 id="orgcfe9644">Using Git</h2>
+<div class="outline-text-2" id="text-orgcfe9644">
+<p>
+This project is managed using git. The primary location of git host is:
+<a href="https://codeberg.org/boink/DES">https://codeberg.org/boink/DES</a>
+</p>
+
+<p>
+If you don't want to use git, you can directly send the files.
+email them to ashwin (the at symbol) ashwink.com.np
+</p>
+</div>
+<div id="outline-container-orgf96abc3" class="outline-3">
+<h3 id="orgf96abc3">setting up the worktree</h3>
+<div class="outline-text-3" id="text-orgf96abc3">
+<p>
+setting up the worktree for git is easy. just type these commands in
+either a terminal emulator  or cmd.exe
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">git config --global user.name "Name Here"
+git config --global user.email "email@domain.tld"
+git clone 'https://codeberg.org/boink/DES'
+cd DES
+git checkout -b mybranch 
+</pre>
+</div>
+<p>
+These will setup the name, email and then prepare a new branch for you to work on.
+Please note that working in a new branch is highly recommended instead of using the master branch directly.
+</p>
+</div>
+</div>
+<div id="outline-container-org79b013a" class="outline-3">
+<h3 id="org79b013a">Commiting</h3>
+<div class="outline-text-3" id="text-org79b013a">
+<p>
+If you did the above steps, you're on a new branch called <code>mybranch</code>.
+Do note that you should commit in a sense of completion of small tasks. this makes it easy to revert to certain period of history.
+After working, commit your changes with:
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">git add "file you worked on" "file2" "file3" "etc"
+git commit 
+</pre>
+</div>
+<p>
+This will ask you for a commit message and a commit body. Put that as asked.
+</p>
+</div>
+</div>
+<div id="outline-container-orga28194d" class="outline-3">
+<h3 id="orga28194d">Merging with upstream (Hasta la vista "pull request")</h3>
+<div class="outline-text-3" id="text-orga28194d">
+<p>
+After you've worked on your branch, it'd be nice if we could also look at it.
+To do that, simply prepare a patch and send an email containing the said patch.
+These commands create a patch which you can attach as a email attachment to
+ashwin (the at symbol) ashwink.com.np
+After sending the patch, I'll update that on the server but in your seperate branch.
+You can click on the branch link in project homepage to see your branch and commits that you've sent.
+</p>
+
+<p>
+You can use this commands to make .patch files which are to be attached in the email body.
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">git format-patch origin
+</pre>
+</div>
+<p>
+Do note that git send-email is a lot better but requires some teeny tiny configuration.
+</p>
+</div>
+<div id="outline-container-orgd0153d8" class="outline-4">
+<h4 id="orgd0153d8">Unrelated note (skip to next part)</h4>
+<div class="outline-text-4" id="text-orgd0153d8">
+<p>
+The reason for using email is because git was <i>made</i> to be used with email.
+Please note that terrible clients like \(gmail\) are terrible and for better email experience,
+you should think about using something like Thunderbird.
+For some informed opinion: <a href="https://drewdevault.com/2018/07/02/Email-driven-git.html">https://drewdevault.com/2018/07/02/Email-driven-git.html</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf90c85c" class="outline-2">
+<h2 id="orgf90c85c">Simple project rules</h2>
+<div class="outline-text-2" id="text-orgf90c85c">
+<p>
+There are some simple rules you need to follow. they are:
+</p>
+<ul class="org-ul">
+<li>The project should be pure C. It should not depend on an implementation of C.
+An specific implementation is allowed if and only if it works as expected without that implementation too.</li>
+<li>You cannot copy-paste code from other sources. This should be self explanatory.
+For an example, do <b>NOT</b> copy a medium article, rename some variables, rearrange some functions and claim you did it yourself.
+If found, you'll be reported to administration.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="email">Email: <a href="mailto:ashwin@ashwink.com.np">ashwin@ashwink.com.np</a></p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
