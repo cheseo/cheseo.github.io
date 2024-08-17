@@ -18,7 +18,7 @@ async function setDevices() {
     tracks.forEach((t)=> {
 	let opt = document.createElement("option");
 	opt.text = t.label;
-	opt.value = t.id;
+	opt.value = t.deviceId;
 	if(t.kind == "audioinput") {
 	    audioList.appendChild(opt);
 	} else if (t.kind == "videoinput") {
