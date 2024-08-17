@@ -1,0 +1,124 @@
+# Ed.
+The Standard Editor, plan 9 version. (use the source: https://ashwink.com.np/ed.c)
+
+# includes:
+- u.h, libc.h
+  libc functions, typical of all plan9 programs.
+- bio.h
+  buffered io, since the standard io is unbuffered.
+- regexp.h
+  regexp
+
+# constants
+  - max file name
+  - max line size
+  - max "block" size (what is a block?)
+  - max no of "block"s
+  - max size of regex, global command, sub-regex
+  - "escflg" escape rune (what's that?)
+
+# main function
+  inits the buffered i/o using fd 0 to read. also disables lethal errors from bio.
+
+  options: '-' (suppress line numbers, byte count, etc "verbosity") and
+  '-o' (output to stderr and the w command writes to stdout (/fd/1)).
+  both of these are useful while scripting.
+
+  -o is mutually exclusive from using a file defined from the argument.
+  the filename to save on is stored in ``savedfile''.
+  There's a crude way to truncate the filename to sizeof savedfile, by:
+  
+	while(*p2++ = *p1++)
+		    if(p2 >= &savedfile[sizeof(savedfile)])
+
+  globp seems to be the current command to use. in the case of -o, it goes straight into "a"
+  command but in the arg-as-filename case it goes to "r" command, perhaps to read the file
+  immediately.
+	tfname = mktemp(strdup("/tmp/eXXXXX"));
+  mktemp probably modifies the string in-place, thus the need to strdup.
+  
+  	 zero = malloc((nlall+5)*sizeof(int*));
+  nall is 128. zero is char*. zero is a pointer to 133 pointers to ints. the use is not clear yet.
+
+# init function
+  uses global variables "tfile" and "tline".
+  tfile is (at startup) set to -1 and tline is set to 2 by this function.
+  tfile is probably the temporary file's fd.
+
+  it then sets the names array to all zeroes.
+  "subnewa", "anymarks" and "ichanged" are zero, iblock and oblock are -1.
+  i believe iblock and oblock are fds, with -1 as the special invalid value.
+  The 3 other variables are yet to be seen.
+      if((tfile = create(tfname, ORDWR, 0600)) < 0){
+  Opens the temporary file.
+  	dot = dol = zero;
+  dot and dol are both pointers to int, pointing to (uninitialized memory of) zeroes.
+
+# commands function
+  variables c(int), temp(int) and a1(int*) are defined. This code follows the conventions of
+  defining variables at the top of the function, making it harder to parse (for me).
+  c is probably a character, a1 may be the first address of the range (a1,a2command: act
+  command within a1 and a2).
+
+  There's a lastsep var, probably for the s command. and a Dir* (d) for use with r.
+
+  Let us assume the command we give will be "a\nasdf\n.\n"
+
+  inside the infinite loop:
+  1. it first check if a print was requested, and if so prints the region.
+  2.
+    - sets lastsep to c (which is set to '\n'), a1 to address().
+    the address function returns the requested address in the command. if not specified, it's zero
+    - since we didn't specify an address (relative or absolute), it goes on to the switch statement.
+  3. inside the switch, the 'a' character is matched, calling add function.
+
+# add function
+      add(int i)
+      {
+      [...]
+      squeeze(0);
+      newline();
+      append(gettty, addr2);
+      }
+  The squeeze function is called, which determines the range of address is valid
+  (validating against "dol" and "zero" which for our case are the same).
+  
+  the newline() function expects a newline (accepting an extra p,l or n command).
+  if otherwise, it reports an error.
+  gettty is a function which scans a line in ``linebuf''. it returns 0 in the case of
+  a successful read, or EOF if either it got EOF or if the line had a single dot,
+  which is how ed handles end of command.
+
+# append function
+  it calls the function supplied(gettty) and while the function puts a line in linebuf,
+  it calls putline() and rearranges the address so that next address is pointed to be written next.
+  if the no of lines > 128, it reallocs the "zero" buffer.
+
+# putline function
+  this function gets a "block" by the getblock() call. it starts to fill that block
+  with a copy of the line, until it encounters a \n or NUL character.
+  the remaining code there is bookkeeping to satisfy getblock().
+
+# getblock function
+  This uses two static buffers, of size BLKSIZE, one each for input and output (ibuff, obuff).
+  It somehow gets the "buffer no", which logic seems weird, i can't understand that part yet.
+  Also, since it re-uses the buffer, it gives the remaining space of the buffer as "nleft".
+
+  The first time it's called, it sets "oblock" (in our case, since we're writing first) to the block no (bno).
+  On repeated calls, after calculating the block, it either gives the same block back (if it's not yet fulled),
+  or, if the block has been full, it derives a different block no. in that case, it calls blkio(),
+  which seeks to the current "block" in the file and writes that single block back.
+
+# putting it all together
+  So, there is a temp file, created at the very start. It is divided into "blocks" of fixed size,
+  and there are many blocks. At every read or write, one whole block is read or written,
+  after seeking into the correct position. Some maths and weird shit is used to track the current
+  buffer inside the file. One line at a time is written on the (static) buffer, which is eventually
+  synced up into the temporary file.
+
+# next
+  Now, the task is to see how it reads a file into buffers, executes 's' commands and such.
+  This old codebase is showing it's age, it's constantly writing as a loop what we would now
+  use strcpy() and such. The huge use of global variables and the short variable names make it a pain to follow through.
+
+  
